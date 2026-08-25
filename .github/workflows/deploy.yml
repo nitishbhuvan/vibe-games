@@ -1,0 +1,64 @@
+name: CI / CD - Test & Deploy to GitHub Pages
+
+on:
+  # Trigger build test on Pull Requests targeted at main
+  pull_request:
+    branches: ['main']
+  # Trigger build + deploy when PR is merged (pushed) to main
+  push:
+    branches: ['main']
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Always builds and validates first
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and Build (Validates code)
+        run: npm run build
+
+      # Only prepare Pages artifact if this is a push to main (i.e. PR was merged)
+      - name: Setup Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  # Job 2: Deploys only if Job 1 passes and only on main branch
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
