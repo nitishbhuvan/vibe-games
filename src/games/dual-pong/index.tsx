@@ -3,15 +3,67 @@ import confetti from 'canvas-confetti';
 import type { GameComponentProps } from '../types';
 import { sounds } from '../../utils/audio';
 
+type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
+
+interface DifficultySetting {
+  id: Difficulty;
+  label: string;
+  speedMultiplier: number;
+  aiReaction: number;
+  color: string;
+  badge: string;
+}
+
+const DIFFICULTIES: DifficultySetting[] = [
+  {
+    id: 'easy',
+    label: 'Mild Brew (1.0x)',
+    speedMultiplier: 1.0,
+    aiReaction: 0.72,
+    color: '#8fae8b',
+    badge: '🌱 Casual',
+  },
+  {
+    id: 'medium',
+    label: 'Espresso (1.35x)',
+    speedMultiplier: 1.35,
+    aiReaction: 0.86,
+    color: '#e09f58',
+    badge: '☕ Medium',
+  },
+  {
+    id: 'hard',
+    label: 'Dark Roast (1.75x)',
+    speedMultiplier: 1.75,
+    aiReaction: 0.96,
+    color: '#d97706',
+    badge: '🔥 Fast',
+  },
+  {
+    id: 'insane',
+    label: 'Nitro Overdrive (2.25x)',
+    speedMultiplier: 2.25,
+    aiReaction: 1.15,
+    color: '#ef4444',
+    badge: '⚡ Insane',
+  },
+];
+
 const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate, isMuted }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [mode, setMode] = useState<'1P' | '2P'>('1P');
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'gameover'>('menu');
   const [p1Score, setP1Score] = useState<number>(0);
   const [p2Score, setP2Score] = useState<number>(0);
   const [winner, setWinner] = useState<string | null>(null);
 
   const keysRef = useRef<{ [key: string]: boolean }>({});
+  const difficultyRef = useRef<Difficulty>(difficulty);
+
+  useEffect(() => {
+    difficultyRef.current = difficulty;
+  }, [difficulty]);
 
   useEffect(() => {
     sounds.setMuted(!!isMuted);
@@ -36,8 +88,10 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
     };
   }, []);
 
-  const startGame = (selectedMode: '1P' | '2P') => {
+  const startGame = (selectedMode: '1P' | '2P', selectedDiff: Difficulty = difficulty) => {
     setMode(selectedMode);
+    setDifficulty(selectedDiff);
+    difficultyRef.current = selectedDiff;
     setP1Score(0);
     setP2Score(0);
     setWinner(null);
@@ -56,18 +110,22 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
     let animId: number;
     let lastTime = performance.now();
 
+    const currentDiffSetting = DIFFICULTIES.find((d) => d.id === difficultyRef.current) || DIFFICULTIES[1];
+    const speedMult = currentDiffSetting.speedMultiplier;
+
     const paddleWidth = 14;
     const paddleHeight = 90;
-    const paddleSpeed = 440;
+    const paddleSpeed = 440 * Math.max(1, speedMult * 0.85);
 
     let p1Y = canvas.height / 2 - paddleHeight / 2;
     let p2Y = canvas.height / 2 - paddleHeight / 2;
 
+    const baseBallSpeed = 360 * speedMult;
+    let ballSpeed = baseBallSpeed;
     let ballX = canvas.width / 2;
     let ballY = canvas.height / 2;
-    let ballSpeed = 380;
     let ballVX = (Math.random() > 0.5 ? 1 : -1) * ballSpeed;
-    let ballVY = (Math.random() * 2 - 1) * 200;
+    let ballVY = (Math.random() * 2 - 1) * (180 * speedMult);
     const ballRadius = 9;
 
     let score1 = 0;
@@ -79,9 +137,9 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
     const resetBall = (direction: number) => {
       ballX = canvas.width / 2;
       ballY = canvas.height / 2;
-      ballSpeed = 380;
+      ballSpeed = baseBallSpeed;
       ballVX = direction * ballSpeed;
-      ballVY = (Math.random() * 2 - 1) * 180;
+      ballVY = (Math.random() * 2 - 1) * (180 * speedMult);
       rally = 0;
     };
 
@@ -101,10 +159,10 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
         if (keys['ArrowUp']) p2Y -= paddleSpeed * dt;
         if (keys['ArrowDown']) p2Y += paddleSpeed * dt;
       } else {
-        // AI Logic
+        // AI Logic scaled with difficulty
         const targetY = ballY - paddleHeight / 2;
         const diff = targetY - p2Y;
-        const aiSpeed = paddleSpeed * 0.82;
+        const aiSpeed = paddleSpeed * currentDiffSetting.aiReaction;
         p2Y += Math.sign(diff) * Math.min(Math.abs(diff), aiSpeed * dt);
       }
       p2Y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, p2Y));
@@ -134,12 +192,12 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       ) {
         ballX = 30 + paddleWidth + ballRadius;
         rally++;
-        ballSpeed = Math.min(ballSpeed + 25, 750);
+        ballSpeed = Math.min(ballSpeed + 25 * speedMult, 950 * speedMult);
         const hitOffset = (ballY - (p1Y + paddleHeight / 2)) / (paddleHeight / 2);
         ballVX = Math.cos(hitOffset * 0.9) * ballSpeed;
         ballVY = Math.sin(hitOffset * 0.9) * ballSpeed;
         sounds.playBounce();
-        spawnParticles(ballX, ballY, '#e09f58');
+        spawnParticles(ballX, ballY, '#e09f58', Math.round(6 * speedMult));
       }
 
       // Right Paddle Collision (Player 2 / AI)
@@ -153,12 +211,12 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       ) {
         ballX = p2X - ballRadius;
         rally++;
-        ballSpeed = Math.min(ballSpeed + 25, 750);
+        ballSpeed = Math.min(ballSpeed + 25 * speedMult, 950 * speedMult);
         const hitOffset = (ballY - (p2Y + paddleHeight / 2)) / (paddleHeight / 2);
         ballVX = -Math.cos(hitOffset * 0.9) * ballSpeed;
         ballVY = Math.sin(hitOffset * 0.9) * ballSpeed;
         sounds.playBounce();
-        spawnParticles(ballX, ballY, '#f5efe6');
+        spawnParticles(ballX, ballY, '#f5efe6', Math.round(6 * speedMult));
       }
 
       // Score Check
@@ -167,17 +225,17 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
         setP2Score(score2);
         sounds.playScore();
         if (score2 >= 7) {
-          endMatch(mode === '2P' ? 'Player 2 Wins!' : 'AI Overlord Wins!');
+          endMatch('p2', mode === '2P' ? 'Player 2 Wins!' : 'AI Overlord Wins!');
           return;
         }
         resetBall(1);
       } else if (ballX > canvas.width) {
         score1++;
         setP1Score(score1);
-        onScoreUpdate?.(score1 * 100);
+        onScoreUpdate?.(score1 * 100 * Math.round(speedMult));
         sounds.playScore();
         if (score1 >= 7) {
-          endMatch('Player 1 Wins!');
+          endMatch('p1', 'Player 1 Wins!');
           return;
         }
         resetBall(-1);
@@ -188,7 +246,7 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
         const p = particles[i];
         p.x += p.vx * dt;
         p.y += p.vy * dt;
-        p.life -= dt * 2;
+        p.life -= dt * 2.2;
         if (p.life <= 0) particles.splice(i, 1);
       }
 
@@ -230,10 +288,10 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Draw Ball
-      ctx.fillStyle = '#ffc988';
-      ctx.shadowColor = '#ffc988';
-      ctx.shadowBlur = 16;
+      // Draw Ball with intensity based on speed
+      ctx.fillStyle = currentDiffSetting.color;
+      ctx.shadowColor = currentDiffSetting.color;
+      ctx.shadowBlur = 14 + speedMult * 6;
       ctx.beginPath();
       ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
       ctx.fill();
@@ -242,7 +300,7 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       // Draw Particles
       particles.forEach((p) => {
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life;
+        ctx.globalAlpha = Math.max(0, p.life);
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -252,30 +310,85 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       animId = requestAnimationFrame(render);
     };
 
-    const spawnParticles = (x: number, y: number, color: string) => {
-      for (let i = 0; i < 8; i++) {
+    const spawnParticles = (x: number, y: number, color: string, count: number) => {
+      for (let i = 0; i < count; i++) {
         particles.push({
           x,
           y,
-          vx: (Math.random() - 0.5) * 160,
-          vy: (Math.random() - 0.5) * 160,
+          vx: (Math.random() - 0.5) * 180 * speedMult,
+          vy: (Math.random() - 0.5) * 180 * speedMult,
           life: 0.5,
           color,
         });
       }
     };
 
-    const endMatch = (winnerMsg: string) => {
+    const triggerVictoryConfetti = (winningSide: 'p1' | 'p2') => {
+      sounds.playWin();
+
+      if (winningSide === 'p1') {
+        // Player 1 (Left Side) Confetti Cannons
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { x: 0.25, y: 0.6 },
+          colors: ['#e09f58', '#f39c12', '#ffc988', '#ffffff', '#c87941'],
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 90,
+            angle: 60,
+            spread: 65,
+            origin: { x: 0.05, y: 0.7 },
+            colors: ['#e09f58', '#ffc988', '#ffffff'],
+          });
+        }, 250);
+        setTimeout(() => {
+          confetti({
+            particleCount: 140,
+            spread: 100,
+            origin: { x: 0.5, y: 0.4 },
+          });
+        }, 500);
+      } else {
+        // Player 2 / AI (Right Side) Confetti Cannons
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { x: 0.75, y: 0.6 },
+          colors: ['#f5efe6', '#d4a373', '#e09f58', '#ffffff', '#ffbe76'],
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 90,
+            angle: 120,
+            spread: 65,
+            origin: { x: 0.95, y: 0.7 },
+            colors: ['#f5efe6', '#d4a373', '#ffffff'],
+          });
+        }, 250);
+        setTimeout(() => {
+          confetti({
+            particleCount: 140,
+            spread: 100,
+            origin: { x: 0.5, y: 0.4 },
+          });
+        }, 500);
+      }
+    };
+
+    const endMatch = (winningSide: 'p1' | 'p2', winnerMsg: string) => {
       setGameState('gameover');
       setWinner(winnerMsg);
-      sounds.playWin();
-      confetti({ particleCount: 80, spread: 60 });
-      onGameOver?.(score1 * 100);
+      triggerVictoryConfetti(winningSide);
+      onGameOver?.(score1 * 100 * Math.round(speedMult));
     };
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, [gameState, mode, onGameOver, onScoreUpdate]);
+
+  const currentDiff = DIFFICULTIES.find((d) => d.id === difficulty) || DIFFICULTIES[1];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '16px' }}>
@@ -291,13 +404,32 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-main)',
+          flexWrap: 'wrap',
+          gap: '12px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>P1 (WASD)</span>
           <span style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{p1Score}</span>
         </div>
-        <div style={{ fontWeight: 700, color: 'var(--text-muted)' }}>First to 7 Wins</div>
+
+        {/* Center: Difficulty Indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span
+            style={{
+              padding: '4px 12px',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--accent-tag-bg)',
+              color: currentDiff.color,
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              border: `1px solid ${currentDiff.color}55`,
+            }}
+          >
+            {currentDiff.badge} • {currentDiff.speedMultiplier}x Speed
+          </span>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{p2Score}</span>
           <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
@@ -319,19 +451,19 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
       >
         <canvas ref={canvasRef} width={820} height={520} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
 
-        {/* Menu */}
+        {/* Menu Overlay with Difficulty Factor Selector */}
         {gameState === 'menu' && (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(20, 13, 9, 0.9)',
+              background: 'rgba(20, 13, 9, 0.92)',
               backdropFilter: 'blur(8px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '24px',
+              gap: '20px',
               color: '#fcf6ee',
               padding: '24px',
               textAlign: 'center',
@@ -340,10 +472,43 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
             <h2 style={{ fontSize: '2.5rem', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
               DUAL PONG BATTLE
             </h2>
-            <p style={{ maxWidth: '440px', color: '#d4beae' }}>
-              Spin curves, deflect rallies, and crush your rival in fast 1P vs AI or 2-Player local arcade pong.
+            <p style={{ maxWidth: '460px', color: '#d4beae', fontSize: '0.95rem' }}>
+              Spin curves, deflect rallies, and adjust the ball speed difficulty factor!
             </p>
-            <div style={{ display: 'flex', gap: '16px' }}>
+
+            {/* Difficulty Speed Multiplier Picker */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-warm)', letterSpacing: '0.04em' }}>
+                SELECT BALL SPEED & DIFFICULTY FACTOR:
+              </span>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {DIFFICULTIES.map((d) => {
+                  const isSel = difficulty === d.id;
+                  return (
+                    <button
+                      key={d.id}
+                      onClick={() => setDifficulty(d.id)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 'var(--radius-md)',
+                        background: isSel ? d.color : 'rgba(40, 25, 16, 0.8)',
+                        color: isSel ? '#ffffff' : '#d4beae',
+                        border: isSel ? `2px solid #ffffff` : `1px solid rgba(255,255,255,0.15)`,
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        boxShadow: isSel ? `0 0 16px ${d.color}88` : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {d.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mode Select Buttons */}
+            <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
               <button
                 onClick={() => startGame('1P')}
                 style={{
@@ -376,40 +541,107 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
           </div>
         )}
 
-        {/* GameOver */}
+        {/* GameOver Overlay with Celebratory Winner Card */}
         {gameState === 'gameover' && (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(20, 13, 9, 0.92)',
-              backdropFilter: 'blur(8px)',
+              background: 'rgba(20, 13, 9, 0.94)',
+              backdropFilter: 'blur(10px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
               gap: '20px',
               color: '#fcf6ee',
+              padding: '24px',
+              textAlign: 'center',
             }}
           >
-            <h2 style={{ fontSize: '2.5rem', color: '#ffc988' }}>🏆 {winner}</h2>
-            <p style={{ fontSize: '1.2rem', color: '#d4beae' }}>
-              Final Score: {p1Score} - {p2Score}
-            </p>
-            <button
-              onClick={() => startGame(mode)}
+            <div
               style={{
-                padding: '12px 32px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--accent-primary)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '1.1rem',
-                boxShadow: 'var(--shadow-glow)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 16px',
+                borderRadius: 'var(--radius-full)',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#f59e0b',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
               }}
             >
-              Rematch
-            </button>
+              🎉 VICTORY CELEBRATION
+            </div>
+
+            <h2
+              style={{
+                fontSize: '2.8rem',
+                color: winner?.includes('Player 1') ? '#e09f58' : '#f5efe6',
+                textShadow: '0 0 30px rgba(224, 159, 88, 0.7)',
+                lineHeight: 1.1,
+              }}
+            >
+              🏆 {winner}
+            </h2>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '20px',
+                background: 'rgba(35, 23, 16, 0.8)',
+                padding: '12px 28px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-main)',
+              }}
+            >
+              <div>
+                <span style={{ fontSize: '0.75rem', color: '#d4beae', display: 'block' }}>FINAL SCORE</span>
+                <span style={{ fontSize: '1.4rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                  {p1Score} - {p2Score}
+                </span>
+              </div>
+              <div style={{ width: '1px', background: 'var(--border-main)' }} />
+              <div>
+                <span style={{ fontSize: '0.75rem', color: '#d4beae', display: 'block' }}>DIFFICULTY</span>
+                <span style={{ fontSize: '1.4rem', fontWeight: 800, color: currentDiff.color }}>
+                  {currentDiff.speedMultiplier}x
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+              <button
+                onClick={() => setGameState('menu')}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'transparent',
+                  border: '1px solid var(--border-main)',
+                  color: '#d4beae',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                }}
+              >
+                Change Difficulty / Mode
+              </button>
+              <button
+                onClick={() => startGame(mode)}
+                style={{
+                  padding: '12px 34px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--accent-primary)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  boxShadow: 'var(--shadow-glow)',
+                }}
+              >
+                Play Rematch
+              </button>
+            </div>
           </div>
         )}
       </div>
