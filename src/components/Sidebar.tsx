@@ -45,18 +45,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className="glass-panel"
         style={{
           position: 'fixed',
-          top: '72px',
+          top: 0,
           left: 0,
           bottom: 0,
-          width: '280px',
-          zIndex: 40,
+          width: 'min(320px, 86vw)',
+          zIndex: 60,
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform var(--transition-spring)',
           display: 'flex',
           flexDirection: 'column',
           borderRight: '1px solid var(--border-main)',
-          padding: '20px 16px',
+          padding: 'calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px',
           overflowY: 'auto',
+          boxShadow: isOpen ? 'var(--shadow-lg), 0 0 40px rgba(0,0,0,0.5)' : 'none',
         }}
       >
         {/* Sidebar Header */}

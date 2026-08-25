@@ -261,8 +261,29 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
     return () => cancelAnimationFrame(animId);
   }, [gameState, onGameOver, onScoreUpdate]);
 
+  const handleCanvasTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 0) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const touchX = e.touches[0].clientX - rect.left;
+
+    if (touchX < rect.width / 2) {
+      keysRef.current['ArrowLeft'] = true;
+      keysRef.current['ArrowRight'] = false;
+    } else {
+      keysRef.current['ArrowRight'] = true;
+      keysRef.current['ArrowLeft'] = false;
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    keysRef.current['ArrowLeft'] = false;
+    keysRef.current['ArrowRight'] = false;
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '14px' }}>
       {/* Score Header */}
       <div
         style={{
@@ -271,24 +292,25 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           alignItems: 'center',
           width: '100%',
           maxWidth: '420px',
-          padding: '12px 20px',
+          padding: '10px 16px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-main)',
         }}
       >
-        <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1.2rem', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
           Altitude: {score}m
         </span>
         <button
           onClick={() => setGameState('menu')}
+          aria-label="Reset game"
           style={{
             padding: '6px 14px',
             borderRadius: 'var(--radius-sm)',
             background: 'var(--accent-tag-bg)',
             color: 'var(--accent-tag-text)',
             fontWeight: 600,
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
           }}
         >
           Reset
@@ -303,9 +325,26 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           overflow: 'hidden',
           boxShadow: 'var(--shadow-lg)',
           border: '2px solid var(--border-highlight)',
+          width: '100%',
+          maxWidth: '420px',
         }}
       >
-        <canvas ref={canvasRef} width={420} height={580} style={{ display: 'block' }} />
+        <canvas
+          ref={canvasRef}
+          width={420}
+          height={580}
+          onTouchStart={handleCanvasTouch}
+          onTouchMove={handleCanvasTouch}
+          onTouchEnd={handleCanvasTouchEnd}
+          onTouchCancel={handleCanvasTouchEnd}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            aspectRatio: '420/580',
+            touchAction: 'none',
+          }}
+        />
 
         {/* Menu */}
         {gameState === 'menu' && (
@@ -319,17 +358,17 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '24px',
+              gap: '20px',
               color: '#fcf6ee',
-              padding: '24px',
+              padding: '20px',
               textAlign: 'center',
             }}
           >
             <h2 style={{ fontSize: '2.4rem', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
               PIXEL JUMP
             </h2>
-            <p style={{ maxWidth: '320px', color: '#d4beae', fontSize: '0.95rem' }}>
-              Steer left and right, bounce on green platforms and grab espresso spring boosts to soar!
+            <p style={{ maxWidth: '320px', color: '#d4beae', fontSize: '0.92rem' }}>
+              Tap left or right side of the screen to steer, bounce on coffee platforms, and reach max altitude!
             </p>
             <button
               onClick={startGame}
@@ -360,12 +399,13 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '20px',
+              gap: '16px',
               color: '#fcf6ee',
+              padding: '16px',
             }}
           >
-            <h2 style={{ fontSize: '2.4rem', color: '#e74c3c' }}>💀 Fell Down!</h2>
-            <p style={{ fontSize: '1.2rem', color: '#d4beae' }}>Max Altitude: {score}m</p>
+            <h2 style={{ fontSize: '2.2rem', color: '#e74c3c' }}>💀 Fell Down!</h2>
+            <p style={{ fontSize: '1.1rem', color: '#d4beae' }}>Max Altitude: {score}m</p>
             <button
               onClick={startGame}
               style={{
@@ -374,7 +414,7 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
                 background: 'var(--accent-primary)',
                 color: '#fff',
                 fontWeight: 700,
-                fontSize: '1.1rem',
+                fontSize: '1.05rem',
                 boxShadow: 'var(--shadow-glow)',
               }}
             >
@@ -383,6 +423,38 @@ const RetroJumpGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           </div>
         )}
       </div>
+
+      {/* On-Screen Steering Buttons */}
+      {gameState === 'playing' && (
+        <div style={{ display: 'flex', gap: '20px', width: '100%', maxWidth: '420px', justifyContent: 'center', marginTop: '4px' }}>
+          <button
+            onPointerDown={() => {
+              keysRef.current['ArrowLeft'] = true;
+              keysRef.current['ArrowRight'] = false;
+            }}
+            onPointerUp={() => (keysRef.current['ArrowLeft'] = false)}
+            onPointerLeave={() => (keysRef.current['ArrowLeft'] = false)}
+            aria-label="Steer Left"
+            className="virtual-btn"
+            style={{ flex: 1, maxWidth: '140px', height: '54px', fontSize: '1.2rem' }}
+          >
+            ◀ LEFT
+          </button>
+          <button
+            onPointerDown={() => {
+              keysRef.current['ArrowRight'] = true;
+              keysRef.current['ArrowLeft'] = false;
+            }}
+            onPointerUp={() => (keysRef.current['ArrowRight'] = false)}
+            onPointerLeave={() => (keysRef.current['ArrowRight'] = false)}
+            aria-label="Steer Right"
+            className="virtual-btn"
+            style={{ flex: 1, maxWidth: '140px', height: '54px', fontSize: '1.2rem' }}
+          >
+            RIGHT ▶
+          </button>
+        </div>
+      )}
     </div>
   );
 };

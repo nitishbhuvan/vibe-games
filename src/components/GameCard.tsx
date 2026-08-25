@@ -59,20 +59,20 @@ export const GameCard: React.FC<GameCardProps> = ({ game, isFirstRecent }) => {
           {game.thumbnail}
         </span>
 
-        {/* Favorite Button */}
+        {/* Favorite Button (44x44px for touch accessibility) */}
         <button
           onClick={handleHeartClick}
           aria-label="Toggle favorite"
           style={{
             position: 'absolute',
-            top: '12px',
-            right: '12px',
-            width: '36px',
-            height: '36px',
+            top: '10px',
+            right: '10px',
+            width: '44px',
+            height: '44px',
             borderRadius: '50%',
-            background: 'rgba(20, 13, 9, 0.65)',
-            backdropFilter: 'blur(6px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(20, 13, 9, 0.7)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -81,11 +81,11 @@ export const GameCard: React.FC<GameCardProps> = ({ game, isFirstRecent }) => {
             zIndex: 10,
           }}
         >
-          <Heart size={18} fill={stats.isFavorite ? '#e74c3c' : 'none'} />
+          <Heart size={20} fill={stats.isFavorite ? '#e74c3c' : 'none'} />
         </button>
 
         {/* Dynamic Status Badges */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {isFirstRecent && stats.lastPlayed && (
             <div
               style={{

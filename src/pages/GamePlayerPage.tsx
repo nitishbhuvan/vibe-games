@@ -119,60 +119,69 @@ export const GamePlayerPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: 'clamp(8px, 2vw, 14px)',
         }}
       >
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-main)',
-            color: 'var(--text-primary)',
-            fontWeight: 700,
-            fontSize: '0.92rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <ArrowLeft size={18} />
-          <span>All Games</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={() => navigate('/')}
+            aria-label="Back to all games"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-main)',
+              color: 'var(--text-primary)',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              boxShadow: 'var(--shadow-sm)',
+              height: '42px',
+            }}
+          >
+            <ArrowLeft size={18} />
+            <span className="back-btn-text">Back</span>
+          </button>
 
-        {/* Quick Game Info Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '1.8rem' }}>{game.thumbnail}</span>
-          <div>
-            <h1 style={{ fontSize: '1.4rem', color: 'var(--text-primary)' }}>{game.title}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              <span>by {game.author}</span>
-              <span>•</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: '#f59e0b', fontWeight: 700 }}>
-                <Star size={13} fill="#f59e0b" />
-                {game.rating.toFixed(1)}
-              </span>
-              <span>•</span>
-              <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
-                <Flame size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> {stats.playCount} plays
-              </span>
+          {/* Quick Game Info Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)' }}>{game.thumbnail}</span>
+            <div>
+              <h1 style={{ fontSize: 'clamp(1.1rem, 3.5vw, 1.4rem)', color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                {game.title}
+              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: '#f59e0b', fontWeight: 700 }}>
+                  <Star size={12} fill="#f59e0b" />
+                  {game.rating.toFixed(1)}
+                </span>
+                <span>•</span>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
+                  <Flame size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> {stats.playCount} plays
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Action Buttons: Mute, Restart, Fullscreen, Share */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setIsMuted(!isMuted)}
             title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+            aria-label="Toggle mute"
             style={{
-              padding: '10px',
+              width: '42px',
+              height: '42px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--bg-card)',
               border: '1px solid var(--border-main)',
               color: isMuted ? 'var(--text-muted)' : 'var(--accent-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
@@ -181,12 +190,17 @@ export const GamePlayerPage: React.FC = () => {
           <button
             onClick={handleRestart}
             title="Restart Game"
+            aria-label="Restart game"
             style={{
-              padding: '10px',
+              width: '42px',
+              height: '42px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--bg-card)',
               border: '1px solid var(--border-main)',
               color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <RotateCcw size={18} />
@@ -195,12 +209,17 @@ export const GamePlayerPage: React.FC = () => {
           <button
             onClick={toggleFullscreen}
             title="Toggle Fullscreen"
+            aria-label="Toggle fullscreen"
             style={{
-              padding: '10px',
+              width: '42px',
+              height: '42px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--bg-card)',
               border: '1px solid var(--border-main)',
               color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -209,21 +228,23 @@ export const GamePlayerPage: React.FC = () => {
           <button
             onClick={handleShare}
             title="Share Game Link"
+            aria-label="Share game link"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '10px 16px',
+              padding: '0 14px',
+              height: '42px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--accent-primary)',
               color: '#ffffff',
               fontWeight: 700,
-              fontSize: '0.88rem',
+              fontSize: '0.85rem',
               boxShadow: 'var(--shadow-sm)',
             }}
           >
             {copiedLink ? <Check size={16} /> : <Share2 size={16} />}
-            <span>{copiedLink ? 'Link Copied!' : 'Share'}</span>
+            <span>{copiedLink ? 'Copied!' : 'Share'}</span>
           </button>
         </div>
       </div>
@@ -239,9 +260,10 @@ export const GamePlayerPage: React.FC = () => {
           background: 'var(--bg-subtle)',
           borderRadius: 'var(--radius-lg)',
           border: '2px solid var(--border-highlight)',
-          padding: '24px',
+          padding: 'clamp(10px, 2.5vw, 24px)',
           boxShadow: 'var(--shadow-lg), 0 0 25px var(--accent-glow)',
-          minHeight: '520px',
+          width: '100%',
+          overflow: 'hidden',
         }}
       >
         <GameComponent
@@ -253,22 +275,22 @@ export const GamePlayerPage: React.FC = () => {
       </div>
 
       {/* Details, Controls & Instructions Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px' }}>
         {/* Controls Card */}
         <div
           style={{
             background: 'var(--bg-card)',
-            padding: '22px',
+            padding: 'clamp(16px, 3vw, 22px)',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-main)',
             boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Gamepad2 size={20} style={{ color: 'var(--accent-primary)' }} />
-            <h3 style={{ fontSize: '1.15rem' }}>Game Controls</h3>
+            <h3 style={{ fontSize: '1.1rem' }}>Game Controls</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {game.controls.map((ctrl, i) => (
               <div
                 key={i}
@@ -281,16 +303,16 @@ export const GamePlayerPage: React.FC = () => {
                   background: 'var(--bg-subtle)',
                 }}
               >
-                <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{ctrl.action}</span>
+                <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>{ctrl.action}</span>
                 <kbd
                   style={{
-                    padding: '4px 10px',
+                    padding: '4px 8px',
                     borderRadius: 'var(--radius-sm)',
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border-main)',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 700,
-                    fontSize: '0.8rem',
+                    fontSize: '0.78rem',
                     color: 'var(--accent-primary)',
                     boxShadow: '0 2px 0 var(--border-main)',
                   }}
@@ -299,6 +321,20 @@ export const GamePlayerPage: React.FC = () => {
                 </kbd>
               </div>
             ))}
+            {/* Mobile Touch hint */}
+            <div
+              style={{
+                marginTop: '4px',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--accent-tag-bg)',
+                color: 'var(--accent-tag-text)',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+              }}
+            >
+              📱 Mobile Touch Enabled: Use the on-screen buttons, touch gestures, or drag directly on screen to play!
+            </div>
           </div>
         </div>
 
@@ -306,22 +342,22 @@ export const GamePlayerPage: React.FC = () => {
         <div
           style={{
             background: 'var(--bg-card)',
-            padding: '22px',
+            padding: 'clamp(16px, 3vw, 22px)',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-main)',
             boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Info size={20} style={{ color: 'var(--accent-primary)' }} />
-            <h3 style={{ fontSize: '1.15rem' }}>How to Play</h3>
+            <h3 style={{ fontSize: '1.1rem' }}>How to Play</h3>
           </div>
-          <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: 1.5 }}>
             {game.description}
           </p>
-          <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <ul style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {game.instructions.map((inst, i) => (
-              <li key={i} style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
+              <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                 {inst}
               </li>
             ))}
@@ -330,9 +366,9 @@ export const GamePlayerPage: React.FC = () => {
       </div>
 
       {/* Recommended More Games */}
-      <section style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)' }}>More Games You Might Like</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+      <section style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>More Games You Might Like</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
           {relatedGames.map((rg) => (
             <GameCard key={rg.id} game={rg} />
           ))}

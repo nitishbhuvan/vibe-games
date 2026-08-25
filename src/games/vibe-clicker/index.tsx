@@ -220,12 +220,12 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
         </button>
       </div>
 
-      {/* Main Game Grid */}
+      {/* Main Game Grid (Responsive auto-fit stack on mobile) */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(280px, 1fr) minmax(320px, 1.2fr)',
-          gap: '24px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+          gap: 'clamp(14px, 3vw, 24px)',
           width: '100%',
           maxWidth: '900px',
         }}
@@ -237,32 +237,32 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
             flexDirection: 'column',
             alignItems: 'center',
             background: 'var(--bg-card)',
-            padding: '24px',
+            padding: 'clamp(16px, 3vw, 24px)',
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--border-main)',
             boxShadow: 'var(--shadow-md)',
             position: 'relative',
           }}
         >
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>TOTAL BEANS ROASTED</span>
+          <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>TOTAL BEANS ROASTED</span>
             <h2
               style={{
-                fontSize: '2.4rem',
+                fontSize: 'clamp(2rem, 5vw, 2.5rem)',
                 color: 'var(--accent-primary)',
                 fontFamily: 'var(--font-mono)',
-                margin: '4px 0',
+                margin: '2px 0',
               }}
             >
               {Math.floor(beans).toLocaleString()}
             </h2>
-            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
               ⚡ {totalBps.toLocaleString()} beans / sec
             </span>
             {combo > 1 && (
               <div
                 style={{
-                  marginTop: '6px',
+                  marginTop: '4px',
                   display: 'inline-block',
                   background: 'var(--accent-tag-bg)',
                   color: 'var(--accent-tag-text)',
@@ -277,12 +277,12 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
             )}
           </div>
 
-          {/* Giant Clickable Mug */}
+          {/* Giant Clickable Mug (Rapid pointerdown for mobile) */}
           <div
-            onClick={handleMugClick}
+            onPointerDown={handleMugClick}
             style={{
-              width: '200px',
-              height: '200px',
+              width: 'clamp(150px, 40vw, 200px)',
+              height: 'clamp(150px, 40vw, 200px)',
               borderRadius: '50%',
               background: 'radial-gradient(circle, var(--accent-warm) 0%, var(--accent-primary) 100%)',
               display: 'flex',
@@ -291,13 +291,14 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
               cursor: 'pointer',
               boxShadow: '0 0 35px var(--accent-glow)',
               transform: `scale(${mugScale})`,
-              transition: 'transform 0.1s ease',
+              transition: 'transform 0.08s ease',
               userSelect: 'none',
               position: 'relative',
-              margin: '20px 0',
+              margin: '14px 0',
+              touchAction: 'manipulation',
             }}
           >
-            <span style={{ fontSize: '5rem', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.3))' }}>☕</span>
+            <span style={{ fontSize: 'clamp(3.8rem, 10vw, 5rem)', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.3))' }}>☕</span>
 
             {/* Floating click scores */}
             {floatingTexts.map((ft) => (
@@ -309,7 +310,7 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
                   top: `${ft.y}px`,
                   fontWeight: 800,
                   color: '#ffffff',
-                  fontSize: '1.4rem',
+                  fontSize: '1.2rem',
                   textShadow: '0 2px 6px rgba(0,0,0,0.6)',
                   pointerEvents: 'none',
                   animation: 'float 0.8s ease-out forwards',
@@ -320,8 +321,8 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
             ))}
           </div>
 
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'auto' }}>
-            Click faster to increase your brew combo boost! Progress is auto-saved.
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'auto' }}>
+            Tap rapidly with multiple fingers to build your brew combo multiplier!
           </p>
         </div>
 
@@ -330,9 +331,9 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
+            gap: '10px',
             background: 'var(--bg-card)',
-            padding: '20px',
+            padding: 'clamp(14px, 3vw, 20px)',
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--border-main)',
             boxShadow: 'var(--shadow-md)',
@@ -340,7 +341,7 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
             overflowY: 'auto',
           }}
         >
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'var(--accent-primary)' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--accent-primary)' }}>
             🏪 Roastery Equipment Shop
           </h3>
 
@@ -354,38 +355,59 @@ const VibeClickerGame: React.FC<GameComponentProps> = ({ onScoreUpdate, isMuted 
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '12px 16px',
+                  padding: '10px 14px',
                   borderRadius: 'var(--radius-md)',
                   background: canAfford ? 'var(--bg-subtle)' : 'transparent',
                   border: `1px solid ${canAfford ? 'var(--border-highlight)' : 'var(--border-main)'}`,
                   opacity: canAfford ? 1 : 0.6,
                   cursor: canAfford ? 'pointer' : 'not-allowed',
                   transition: 'all 0.15s ease',
+                  minHeight: '44px',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '1.8rem' }}>{u.icon}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.4rem' }}>{u.icon}</span>
                   <div>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{u.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      +{u.cps} bps • {u.description}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{u.name}</span>
+                      {u.count > 0 && (
+                        <span
+                          style={{
+                            background: 'var(--accent-primary)',
+                            color: '#fff',
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            padding: '1px 6px',
+                            borderRadius: 'var(--radius-full)',
+                          }}
+                        >
+                          {u.count}
+                        </span>
+                      )}
                     </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>+{u.cps} beans/s</span>
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: canAfford ? 'var(--accent-primary)' : 'var(--text-muted)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    ☕ {u.cost.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Owned: {u.count}</div>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    buyUpgrade(u.id);
+                  }}
+                  disabled={!canAfford}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: canAfford ? 'var(--accent-primary)' : 'var(--bg-card)',
+                    color: canAfford ? '#ffffff' : 'var(--text-muted)',
+                    border: '1px solid var(--border-main)',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    minHeight: '36px',
+                  }}
+                >
+                  ☕ {u.cost.toLocaleString()}
+                </button>
               </div>
             );
           })}

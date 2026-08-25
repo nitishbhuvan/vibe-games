@@ -94,27 +94,33 @@
   --badge-top-text: #fde047;
 }
 
-/* Base Reset */
+/* Base Reset & Mobile Touch Optimizations */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font-sans);
   background-color: var(--bg-main);
   color: var(--text-primary);
   line-height: 1.5;
   overflow-x: hidden;
+  touch-action: manipulation;
   transition: background-color var(--transition-normal), color var(--transition-normal);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -149,6 +155,9 @@ button {
   border: none;
   background: none;
   color: inherit;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Animations */
@@ -216,7 +225,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 2px;
   position: relative;
   vertical-align: middle;
 }
@@ -228,7 +237,7 @@ button {
 }
 
 .brand-logo-container:hover .controller-m-svg {
-  transform: scale(1.18) rotate(-4deg);
+  transform: scale(1.15) rotate(-4deg);
 }
 
 /* Interactive Floating Cards */
@@ -236,8 +245,102 @@ button {
   transition: transform var(--transition-spring), box-shadow var(--transition-normal), border-color var(--transition-normal);
 }
 
-.game-card-hover:hover {
-  transform: translateY(-8px) scale(1.015);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-  border-color: var(--accent-primary);
+@media (hover: hover) {
+  .game-card-hover:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: var(--accent-primary);
+  }
 }
+
+.game-card-hover:active {
+  transform: scale(0.98);
+}
+
+/* Touch-Optimized Virtual Gamepad & Buttons */
+.virtual-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-highlight);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm), 0 3px 0 var(--border-main);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.virtual-btn:active, .virtual-btn.active {
+  transform: translateY(2px) scale(0.95);
+  background: var(--accent-tag-bg);
+  color: var(--accent-tag-text);
+  border-color: var(--accent-primary);
+  box-shadow: 0 1px 0 var(--border-main), var(--shadow-glow);
+}
+
+.virtual-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  width: 170px;
+  height: 170px;
+  touch-action: none;
+}
+
+/* Horizontal scroll with hide-scrollbar utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(58px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-sidebar);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-main);
+  z-index: 45;
+  justify-content: space-around;
+  align-items: center;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+@media (max-width: 680px) {
+  .desktop-search-container {
+    display: none !important;
+  }
+  .mobile-search-btn {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .theme-text {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+}
+

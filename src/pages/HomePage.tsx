@@ -64,12 +64,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             borderRadius: 'var(--radius-lg)',
             background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-subtle) 100%)',
             border: '2px solid var(--border-highlight)',
-            padding: '36px 32px',
+            padding: 'clamp(20px, 4vw, 36px) clamp(16px, 4vw, 32px)',
             overflow: 'hidden',
             boxShadow: 'var(--shadow-md), 0 0 20px var(--accent-glow)',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+            gap: 'clamp(18px, 3vw, 24px)',
             alignItems: 'center',
           }}
         >
@@ -88,7 +88,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', zIndex: 2 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span
                 style={{
                   display: 'inline-flex',
@@ -98,7 +98,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   borderRadius: 'var(--radius-full)',
                   background: 'var(--accent-tag-bg)',
                   color: 'var(--accent-tag-text)',
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   fontWeight: 700,
                 }}
               >
@@ -108,19 +108,19 @@ export const HomePage: React.FC<HomePageProps> = ({
               {totalUserPlays > 0 && (
                 <span
                   style={{
-                    fontSize: '0.8rem',
+                    fontSize: '0.78rem',
                     color: 'var(--text-muted)',
                     fontWeight: 600,
                   }}
                 >
-                  ⚡ {totalUserPlays} sessions played on this device
+                  ⚡ {totalUserPlays} plays locally
                 </span>
               )}
             </div>
 
             <h1
               style={{
-                fontSize: 'clamp(2rem, 4vw, 2.8rem)',
+                fontSize: 'clamp(1.75rem, 5vw, 2.8rem)',
                 color: 'var(--text-primary)',
                 letterSpacing: '-0.02em',
                 lineHeight: 1.15,
@@ -130,23 +130,23 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span style={{ color: 'var(--accent-primary)' }}>Browser Games</span>
             </h1>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '520px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.92rem, 2vw, 1.05rem)', maxWidth: '520px' }}>
               Instant arcade, 2-player local duels, puzzle solvers, and live Python scripts. Zero downloads, pure vibe.
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
               <Link
                 to={`/game/${featuredGame.id}`}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '12px 26px',
+                  padding: '12px 24px',
                   borderRadius: 'var(--radius-full)',
                   background: 'var(--accent-primary)',
                   color: '#ffffff',
                   fontWeight: 700,
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   boxShadow: 'var(--shadow-glow)',
                   transition: 'transform var(--transition-fast)',
                 }}
@@ -164,7 +164,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               flexDirection: 'column',
               gap: '12px',
               background: 'var(--bg-card)',
-              padding: '24px',
+              padding: 'clamp(16px, 3vw, 24px)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-main)',
               boxShadow: 'var(--shadow-sm)',
@@ -173,9 +173,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Coffee size={22} style={{ color: 'var(--accent-primary)' }} />
-              <h3 style={{ fontSize: '1.1rem' }}>Smart Vibe Sorting</h3>
+              <h3 style={{ fontSize: '1.05rem' }}>Smart Vibe Sorting</h3>
             </div>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
               Your device automatically puts your <strong>Most Recently Played</strong> game at #1, followed by your{' '}
               <strong>Most Played</strong> titles!
             </p>
@@ -184,20 +184,20 @@ export const HomePage: React.FC<HomePageProps> = ({
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: '8px',
-                marginTop: '6px',
-                paddingTop: '12px',
+                marginTop: '4px',
+                paddingTop: '10px',
                 borderTop: '1px solid var(--border-main)',
               }}
             >
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>AVAILABLE GAMES</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>AVAILABLE GAMES</span>
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
                   {ALL_GAMES.length}
                 </span>
               </div>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>TAG CATEGORIES</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>TAG CATEGORIES</span>
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>
                   {GAME_CATEGORIES.length - 1}
                 </span>
               </div>
@@ -206,15 +206,17 @@ export const HomePage: React.FC<HomePageProps> = ({
         </section>
       )}
 
-      {/* Category Pills Bar */}
+      {/* Category Pills Bar (Smooth Touch Scroll) */}
       <div
+        className="no-scrollbar"
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '8px',
           overflowX: 'auto',
-          paddingBottom: '8px',
-          scrollbarWidth: 'none',
+          paddingBottom: '4px',
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory',
         }}
       >
         {GAME_CATEGORIES.map((cat) => {
@@ -226,17 +228,19 @@ export const HomePage: React.FC<HomePageProps> = ({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '8px 18px',
+                gap: '6px',
+                padding: '8px 16px',
                 borderRadius: 'var(--radius-full)',
                 background: isSelected ? 'var(--accent-primary)' : 'var(--bg-card)',
                 color: isSelected ? '#ffffff' : 'var(--text-secondary)',
                 fontWeight: isSelected ? 700 : 500,
-                fontSize: '0.9rem',
+                fontSize: '0.86rem',
                 border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border-main)',
                 boxShadow: isSelected ? 'var(--shadow-glow)' : 'var(--shadow-sm)',
                 whiteSpace: 'nowrap',
                 transition: 'all var(--transition-fast)',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
               }}
             >
               <span>{cat.icon}</span>
@@ -247,16 +251,16 @@ export const HomePage: React.FC<HomePageProps> = ({
       </div>
 
       {/* Active Filter & Sorting Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span>{currentCatInfo.icon}</span>
-            <span>{searchQuery ? `Search Results for "${searchQuery}"` : currentCatInfo.name}</span>
+            <span>{searchQuery ? `Search: "${searchQuery}"` : currentCatInfo.name}</span>
             <span
               style={{
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
-                padding: '2px 10px',
+                padding: '2px 8px',
                 borderRadius: 'var(--radius-full)',
                 background: 'var(--accent-tag-bg)',
                 color: 'var(--accent-tag-text)',
@@ -265,7 +269,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               {sortedGames.length}
             </span>
           </h2>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
             {searchQuery
               ? 'Showing games matching your keywords'
               : currentCatInfo.description}
@@ -278,26 +282,26 @@ export const HomePage: React.FC<HomePageProps> = ({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '6px 12px',
+            padding: '4px 10px',
             borderRadius: 'var(--radius-md)',
             background: 'var(--bg-card)',
             border: '1px solid var(--border-main)',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             color: 'var(--text-secondary)',
           }}
         >
-          <Flame size={14} style={{ color: 'var(--accent-primary)' }} />
-          <span>Sorted by Recent & Most Played</span>
+          <Flame size={12} style={{ color: 'var(--accent-primary)' }} />
+          <span>Recent & Most Played</span>
         </div>
       </div>
 
-      {/* Games Grid */}
+      {/* Games Grid (Zero horizontal overflow on narrow mobile) */}
       {sortedGames.length > 0 ? (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+            gap: 'clamp(16px, 3vw, 24px)',
           }}
         >
           {sortedGames.map((game, index) => {

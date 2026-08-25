@@ -60,6 +60,8 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
 
   const keysRef = useRef<{ [key: string]: boolean }>({});
   const difficultyRef = useRef<Difficulty>(difficulty);
+  const p1TouchYRef = useRef<number | null>(null);
+  const p2TouchYRef = useRef<number | null>(null);
 
   useEffect(() => {
     difficultyRef.current = difficulty;
@@ -88,6 +90,29 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
     };
   }, []);
 
+  const handleCanvasTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleY = canvas.height / rect.height;
+    const midX = rect.left + rect.width / 2;
+
+    for (let i = 0; i < e.touches.length; i++) {
+      const touch = e.touches[i];
+      const touchY = (touch.clientY - rect.top) * scaleY;
+      if (touch.clientX < midX) {
+        p1TouchYRef.current = touchY;
+      } else {
+        p2TouchYRef.current = touchY;
+      }
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    p1TouchYRef.current = null;
+    p2TouchYRef.current = null;
+  };
+
   const startGame = (selectedMode: '1P' | '2P', selectedDiff: Difficulty = difficulty) => {
     setMode(selectedMode);
     setDifficulty(selectedDiff);
@@ -95,6 +120,8 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
     setP1Score(0);
     setP2Score(0);
     setWinner(null);
+    p1TouchYRef.current = null;
+    p2TouchYRef.current = null;
     setGameState('playing');
     sounds.playWin();
   };
@@ -149,15 +176,25 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
 
       const keys = keysRef.current;
 
-      // 1. Move Player 1 (W / S)
-      if (keys['w'] || keys['W']) p1Y -= paddleSpeed * dt;
-      if (keys['s'] || keys['S']) p1Y += paddleSpeed * dt;
+      // 1. Move Player 1 (Touch drag OR W/S)
+      if (p1TouchYRef.current !== null) {
+        const targetP1 = p1TouchYRef.current - paddleHeight / 2;
+        p1Y += (targetP1 - p1Y) * Math.min(18 * dt, 1);
+      } else {
+        if (keys['w'] || keys['W']) p1Y -= paddleSpeed * dt;
+        if (keys['s'] || keys['S']) p1Y += paddleSpeed * dt;
+      }
       p1Y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, p1Y));
 
-      // 2. Move Player 2 (Arrow keys in 2P, AI in 1P)
+      // 2. Move Player 2 (Touch drag in 2P, Arrow keys in 2P, or AI in 1P)
       if (mode === '2P') {
-        if (keys['ArrowUp']) p2Y -= paddleSpeed * dt;
-        if (keys['ArrowDown']) p2Y += paddleSpeed * dt;
+        if (p2TouchYRef.current !== null) {
+          const targetP2 = p2TouchYRef.current - paddleHeight / 2;
+          p2Y += (targetP2 - p2Y) * Math.min(18 * dt, 1);
+        } else {
+          if (keys['ArrowUp']) p2Y -= paddleSpeed * dt;
+          if (keys['ArrowDown']) p2Y += paddleSpeed * dt;
+        }
       } else {
         // AI Logic scaled with difficulty
         const targetY = ballY - paddleHeight / 2;
@@ -438,7 +475,7 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
         </div>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas Frame with Touch Interaction */}
       <div
         style={{
           position: 'relative',
@@ -446,10 +483,26 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
           overflow: 'hidden',
           boxShadow: 'var(--shadow-lg)',
           border: '2px solid var(--border-highlight)',
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: '820px',
         }}
       >
-        <canvas ref={canvasRef} width={820} height={520} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
+        <canvas
+          ref={canvasRef}
+          width={820}
+          height={520}
+          onTouchStart={handleCanvasTouch}
+          onTouchMove={handleCanvasTouch}
+          onTouchEnd={handleCanvasTouchEnd}
+          onTouchCancel={handleCanvasTouchEnd}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            aspectRatio: '820/520',
+            touchAction: 'none',
+          }}
+        />
 
         {/* Menu Overlay with Difficulty Factor Selector */}
         {gameState === 'menu' && (
@@ -463,25 +516,26 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '20px',
+              gap: 'clamp(12px, 3vw, 20px)',
               color: '#fcf6ee',
-              padding: '24px',
+              padding: '16px',
               textAlign: 'center',
+              overflowY: 'auto',
             }}
           >
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
               DUAL PONG BATTLE
             </h2>
-            <p style={{ maxWidth: '460px', color: '#d4beae', fontSize: '0.95rem' }}>
-              Spin curves, deflect rallies, and adjust the ball speed difficulty factor!
+            <p style={{ maxWidth: '460px', color: '#d4beae', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+              Spin curves, deflect rallies, and adjust the ball speed difficulty factor! Touch and drag directly on screen to steer your paddle!
             </p>
 
             {/* Difficulty Speed Multiplier Picker */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-warm)', letterSpacing: '0.04em' }}>
-                SELECT BALL SPEED & DIFFICULTY FACTOR:
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-warm)', letterSpacing: '0.04em' }}>
+                DIFFICULTY FACTOR:
               </span>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {DIFFICULTIES.map((d) => {
                   const isSel = difficulty === d.id;
                   return (
@@ -489,13 +543,13 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
                       key={d.id}
                       onClick={() => setDifficulty(d.id)}
                       style={{
-                        padding: '8px 16px',
+                        padding: '6px 12px',
                         borderRadius: 'var(--radius-md)',
                         background: isSel ? d.color : 'rgba(40, 25, 16, 0.8)',
                         color: isSel ? '#ffffff' : '#d4beae',
                         border: isSel ? `2px solid #ffffff` : `1px solid rgba(255,255,255,0.15)`,
                         fontWeight: 700,
-                        fontSize: '0.85rem',
+                        fontSize: '0.8rem',
                         boxShadow: isSel ? `0 0 16px ${d.color}88` : 'none',
                         transition: 'all 0.15s ease',
                       }}
@@ -508,16 +562,16 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
             </div>
 
             {/* Mode Select Buttons */}
-            <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
                 onClick={() => startGame('1P')}
                 style={{
-                  padding: '12px 28px',
+                  padding: '10px 24px',
                   borderRadius: 'var(--radius-md)',
                   background: 'var(--accent-primary)',
                   color: '#ffffff',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                   boxShadow: 'var(--shadow-glow)',
                 }}
               >
@@ -526,16 +580,16 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
               <button
                 onClick={() => startGame('2P')}
                 style={{
-                  padding: '12px 28px',
+                  padding: '10px 24px',
                   borderRadius: 'var(--radius-md)',
                   background: '#2d1d13',
                   color: 'var(--accent-warm)',
                   border: '1px solid var(--accent-primary)',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                 }}
               >
-                2 Players (Local)
+                2 Players (Split Touch)
               </button>
             </div>
           </div>
@@ -553,9 +607,9 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '20px',
+              gap: '16px',
               color: '#fcf6ee',
-              padding: '24px',
+              padding: '16px',
               textAlign: 'center',
             }}
           >
@@ -564,12 +618,12 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '6px 16px',
+                padding: '4px 14px',
                 borderRadius: 'var(--radius-full)',
                 background: 'rgba(245, 158, 11, 0.15)',
                 color: '#f59e0b',
                 fontWeight: 800,
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
                 border: '1px solid rgba(245, 158, 11, 0.3)',
               }}
             >
@@ -578,7 +632,7 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
 
             <h2
               style={{
-                fontSize: '2.8rem',
+                fontSize: 'clamp(2rem, 5vw, 2.8rem)',
                 color: winner?.includes('Player 1') ? '#e09f58' : '#f5efe6',
                 textShadow: '0 0 30px rgba(224, 159, 88, 0.7)',
                 lineHeight: 1.1,
@@ -590,52 +644,52 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
             <div
               style={{
                 display: 'flex',
-                gap: '20px',
+                gap: '16px',
                 background: 'rgba(35, 23, 16, 0.8)',
-                padding: '12px 28px',
+                padding: '10px 22px',
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-main)',
               }}
             >
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#d4beae', display: 'block' }}>FINAL SCORE</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: '0.72rem', color: '#d4beae', display: 'block' }}>FINAL SCORE</span>
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
                   {p1Score} - {p2Score}
                 </span>
               </div>
               <div style={{ width: '1px', background: 'var(--border-main)' }} />
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#d4beae', display: 'block' }}>DIFFICULTY</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: 800, color: currentDiff.color }}>
+                <span style={{ fontSize: '0.72rem', color: '#d4beae', display: 'block' }}>DIFFICULTY</span>
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: currentDiff.color }}>
                   {currentDiff.speedMultiplier}x
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
                 onClick={() => setGameState('menu')}
                 style={{
-                  padding: '12px 24px',
+                  padding: '10px 20px',
                   borderRadius: 'var(--radius-md)',
                   background: 'transparent',
                   border: '1px solid var(--border-main)',
                   color: '#d4beae',
                   fontWeight: 600,
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                 }}
               >
-                Change Difficulty / Mode
+                Change Difficulty
               </button>
               <button
                 onClick={() => startGame(mode)}
                 style={{
-                  padding: '12px 34px',
+                  padding: '10px 28px',
                   borderRadius: 'var(--radius-md)',
                   background: 'var(--accent-primary)',
                   color: '#fff',
                   fontWeight: 700,
-                  fontSize: '1.05rem',
+                  fontSize: '0.95rem',
                   boxShadow: 'var(--shadow-glow)',
                 }}
               >
@@ -645,6 +699,67 @@ const DualPongGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate,
           </div>
         )}
       </div>
+
+      {/* On-Screen Virtual Buttons & Touch Controls Guide */}
+      {gameState === 'playing' && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '820px', padding: '0 8px', gap: '12px', alignItems: 'center' }}>
+          {/* P1 Controls */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onPointerDown={() => (keysRef.current['w'] = true)}
+              onPointerUp={() => (keysRef.current['w'] = false)}
+              onPointerLeave={() => (keysRef.current['w'] = false)}
+              aria-label="Player 1 Up"
+              className="virtual-btn"
+              style={{ width: '50px', height: '48px', fontSize: '1.2rem', color: '#e09f58' }}
+            >
+              ▲
+            </button>
+            <button
+              onPointerDown={() => (keysRef.current['s'] = true)}
+              onPointerUp={() => (keysRef.current['s'] = false)}
+              onPointerLeave={() => (keysRef.current['s'] = false)}
+              aria-label="Player 1 Down"
+              className="virtual-btn"
+              style={{ width: '50px', height: '48px', fontSize: '1.2rem', color: '#e09f58' }}
+            >
+              ▼
+            </button>
+            <span style={{ fontSize: '0.78rem', color: '#e09f58', fontWeight: 700, marginLeft: '4px' }}>P1 Controls</span>
+          </div>
+
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+            👆 Or drag finger directly on screen!
+          </span>
+
+          {/* P2 Controls in 2P Mode */}
+          {mode === '2P' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.78rem', color: '#f5efe6', fontWeight: 700, marginRight: '4px' }}>P2 Controls</span>
+              <button
+                onPointerDown={() => (keysRef.current['ArrowUp'] = true)}
+                onPointerUp={() => (keysRef.current['ArrowUp'] = false)}
+                onPointerLeave={() => (keysRef.current['ArrowUp'] = false)}
+                aria-label="Player 2 Up"
+                className="virtual-btn"
+                style={{ width: '50px', height: '48px', fontSize: '1.2rem' }}
+              >
+                ▲
+              </button>
+              <button
+                onPointerDown={() => (keysRef.current['ArrowDown'] = true)}
+                onPointerUp={() => (keysRef.current['ArrowDown'] = false)}
+                onPointerLeave={() => (keysRef.current['ArrowDown'] = false)}
+                aria-label="Player 2 Down"
+                className="virtual-btn"
+                style={{ width: '50px', height: '48px', fontSize: '1.2rem' }}
+              >
+                ▼
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -484,10 +484,22 @@ const TurboDriftGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           overflow: 'hidden',
           boxShadow: 'var(--shadow-lg)',
           border: '2px solid var(--border-highlight)',
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: '880px',
         }}
       >
-        <canvas ref={canvasRef} width={880} height={600} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
+        <canvas
+          ref={canvasRef}
+          width={880}
+          height={600}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            aspectRatio: '880/600',
+            touchAction: 'none',
+          }}
+        />
 
         {/* Menu Overlay */}
         {gameState === 'menu' && (
@@ -495,53 +507,54 @@ const TurboDriftGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(20, 13, 9, 0.88)',
+              background: 'rgba(20, 13, 9, 0.9)',
               backdropFilter: 'blur(8px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '24px',
+              gap: 'clamp(14px, 3vw, 24px)',
               color: '#fcf6ee',
-              padding: '24px',
+              padding: '16px',
               textAlign: 'center',
+              overflowY: 'auto',
             }}
           >
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', color: 'var(--accent-warm)', textShadow: '0 0 20px rgba(224, 159, 88, 0.6)' }}>
               TURBO DRIFT 2D
             </h2>
-            <p style={{ maxWidth: '460px', color: '#d4beae' }}>
-              Choose your mode. Master high-speed apexes, pick up espresso nitro beans, and set the fastest lap!
+            <p style={{ maxWidth: '460px', color: '#d4beae', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+              Master apex turns, drift corners with the handbrake, and set the fastest lap! Full mobile gamepad enabled below!
             </p>
-            <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
                 onClick={() => startGame('1P')}
                 style={{
-                  padding: '12px 28px',
+                  padding: '10px 24px',
                   borderRadius: 'var(--radius-md)',
                   background: 'var(--accent-primary)',
                   color: '#ffffff',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                   boxShadow: 'var(--shadow-glow)',
                   transition: 'transform 0.2s',
                 }}
               >
-                1 Player (Solo Time Trial)
+                1 Player (Time Trial)
               </button>
               <button
                 onClick={() => startGame('2P')}
                 style={{
-                  padding: '12px 28px',
+                  padding: '10px 24px',
                   borderRadius: 'var(--radius-md)',
                   background: '#2d1d13',
                   color: 'var(--accent-warm)',
                   border: '1px solid var(--accent-primary)',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                 }}
               >
-                2 Players (Split Battle)
+                2 Players (Split Duel)
               </button>
             </div>
           </div>
@@ -553,27 +566,29 @@ const TurboDriftGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(20, 13, 9, 0.9)',
+              background: 'rgba(20, 13, 9, 0.92)',
               backdropFilter: 'blur(8px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '20px',
+              gap: '16px',
               color: '#fcf6ee',
+              padding: '16px',
+              textAlign: 'center',
             }}
           >
-            <h2 style={{ fontSize: '2.4rem', color: '#ffc988' }}>🏆 {winner}</h2>
-            <p style={{ fontSize: '1.2rem', color: '#d4beae' }}>Final Score: {score}</p>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.4rem)', color: '#ffc988' }}>🏆 {winner}</h2>
+            <p style={{ fontSize: '1.1rem', color: '#d4beae' }}>Final Score: {score}</p>
             <button
               onClick={() => startGame(mode)}
               style={{
-                padding: '12px 32px',
+                padding: '10px 28px',
                 borderRadius: 'var(--radius-md)',
                 background: 'var(--accent-primary)',
                 color: '#fff',
                 fontWeight: 700,
-                fontSize: '1.1rem',
+                fontSize: '1rem',
                 boxShadow: 'var(--shadow-glow)',
               }}
             >
@@ -582,6 +597,140 @@ const TurboDriftGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           </div>
         )}
       </div>
+
+      {/* Mobile Racing Gamepad Controller */}
+      {gameState === 'playing' && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '880px',
+            padding: '4px 8px',
+            gap: '10px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Left Thumb: Steering */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onPointerDown={() => {
+                keysRef.current['ArrowLeft'] = true;
+                keysRef.current['a'] = true;
+              }}
+              onPointerUp={() => {
+                keysRef.current['ArrowLeft'] = false;
+                keysRef.current['a'] = false;
+              }}
+              onPointerLeave={() => {
+                keysRef.current['ArrowLeft'] = false;
+                keysRef.current['a'] = false;
+              }}
+              aria-label="Steer Left"
+              className="virtual-btn"
+              style={{ width: '56px', height: '54px', fontSize: '1.25rem' }}
+            >
+              ◀
+            </button>
+            <button
+              onPointerDown={() => {
+                keysRef.current['ArrowRight'] = true;
+                keysRef.current['d'] = true;
+              }}
+              onPointerUp={() => {
+                keysRef.current['ArrowRight'] = false;
+                keysRef.current['d'] = false;
+              }}
+              onPointerLeave={() => {
+                keysRef.current['ArrowRight'] = false;
+                keysRef.current['d'] = false;
+              }}
+              aria-label="Steer Right"
+              className="virtual-btn"
+              style={{ width: '56px', height: '54px', fontSize: '1.25rem' }}
+            >
+              ▶
+            </button>
+          </div>
+
+          {/* Center: Handbrake Drift */}
+          <button
+            onPointerDown={() => (keysRef.current[' '] = true)}
+            onPointerUp={() => (keysRef.current[' '] = false)}
+            onPointerLeave={() => (keysRef.current[' '] = false)}
+            aria-label="Handbrake Drift"
+            className="virtual-btn"
+            style={{
+              padding: '0 18px',
+              height: '54px',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              background: 'rgba(231, 76, 60, 0.25)',
+              border: '2px solid #e74c3c',
+              color: '#ff7675',
+            }}
+          >
+            ⚡ DRIFT
+          </button>
+
+          {/* Right Thumb: Gas & Brake */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onPointerDown={() => {
+                keysRef.current['ArrowDown'] = true;
+                keysRef.current['s'] = true;
+              }}
+              onPointerUp={() => {
+                keysRef.current['ArrowDown'] = false;
+                keysRef.current['s'] = false;
+              }}
+              onPointerLeave={() => {
+                keysRef.current['ArrowDown'] = false;
+                keysRef.current['s'] = false;
+              }}
+              aria-label="Brake or Reverse"
+              className="virtual-btn"
+              style={{
+                width: '56px',
+                height: '54px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                color: '#e74c3c',
+              }}
+            >
+              BRAKE
+            </button>
+            <button
+              onPointerDown={() => {
+                keysRef.current['ArrowUp'] = true;
+                keysRef.current['w'] = true;
+              }}
+              onPointerUp={() => {
+                keysRef.current['ArrowUp'] = false;
+                keysRef.current['w'] = false;
+              }}
+              onPointerLeave={() => {
+                keysRef.current['ArrowUp'] = false;
+                keysRef.current['w'] = false;
+              }}
+              aria-label="Accelerate"
+              className="virtual-btn"
+              style={{
+                width: '64px',
+                height: '54px',
+                fontSize: '0.85rem',
+                fontWeight: 800,
+                background: 'var(--accent-primary)',
+                color: '#ffffff',
+                boxShadow: 'var(--shadow-glow)',
+              }}
+            >
+              GAS 🔥
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

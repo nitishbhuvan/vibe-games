@@ -305,8 +305,43 @@ const PythonMazeRunnerGame: React.FC<GameComponentProps> = ({ onGameOver, onScor
     ctx.restore();
   }, [maze, relicsCollected, activeTab]);
 
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!touchStartRef.current || e.changedTouches.length === 0) return;
+    const start = touchStartRef.current;
+    const end = {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY,
+    };
+    touchStartRef.current = null;
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist >= 20) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0) movePlayer(1, 0);
+        else movePlayer(-1, 0);
+      } else {
+        if (dy > 0) movePlayer(0, 1);
+        else movePlayer(0, -1);
+      }
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '14px' }}>
       {/* Top Header & Tab Controls */}
       <div
         style={{
@@ -315,22 +350,24 @@ const PythonMazeRunnerGame: React.FC<GameComponentProps> = ({ onGameOver, onScor
           alignItems: 'center',
           width: '100%',
           maxWidth: '750px',
-          padding: '12px 20px',
+          padding: '10px 16px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-main)',
+          flexWrap: 'wrap',
+          gap: '8px',
         }}
       >
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={() => setActiveTab('game')}
             style={{
-              padding: '8px 16px',
+              padding: '6px 14px',
               borderRadius: 'var(--radius-sm)',
               background: activeTab === 'game' ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === 'game' ? '#ffffff' : 'var(--text-secondary)',
               fontWeight: 700,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
             }}
           >
             🎮 Play Maze
@@ -338,107 +375,171 @@ const PythonMazeRunnerGame: React.FC<GameComponentProps> = ({ onGameOver, onScor
           <button
             onClick={() => setActiveTab('code')}
             style={{
-              padding: '8px 16px',
+              padding: '6px 14px',
               borderRadius: 'var(--radius-sm)',
               background: activeTab === 'code' ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === 'code' ? '#ffffff' : 'var(--text-secondary)',
               fontWeight: 700,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
             }}
           >
-            🐍 Python Script Editor
+            🐍 Python Code
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>☕ Relics: {relicsCollected} / 5</span>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '0.88rem' }}>
+            ☕ Relics: {relicsCollected} / 5
+          </span>
           <button
             onClick={runPythonScript}
             style={{
-              padding: '8px 14px',
+              padding: '6px 12px',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--accent-tag-bg)',
               color: 'var(--accent-tag-text)',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
             }}
           >
-            {pyodideStatus === 'loading' ? '⚡ Compiling...' : '⚡ Re-run Python'}
+            {pyodideStatus === 'loading' ? '⚡ Compiling...' : '⚡ Re-run'}
           </button>
         </div>
       </div>
 
       {/* Main Viewport */}
       {activeTab === 'game' ? (
-        <div
-          style={{
-            position: 'relative',
-            borderRadius: 'var(--radius-md)',
-            overflow: 'hidden',
-            boxShadow: 'var(--shadow-lg)',
-            border: '2px solid var(--border-highlight)',
-            maxWidth: '100%',
-          }}
-        >
-          <canvas ref={canvasRef} width={750} height={500} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
-
-          {won && (
-            <div
+        <>
+          <div
+            style={{
+              position: 'relative',
+              borderRadius: 'var(--radius-md)',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-lg)',
+              border: '2px solid var(--border-highlight)',
+              width: '100%',
+              maxWidth: '750px',
+            }}
+          >
+            <canvas
+              ref={canvasRef}
+              width={750}
+              height={500}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
               style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(20, 13, 9, 0.9)',
-                backdropFilter: 'blur(8px)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '20px',
-                color: '#fcf6ee',
+                display: 'block',
+                width: '100%',
+                height: 'auto',
+                aspectRatio: '750/500',
+                touchAction: 'none',
               }}
-            >
-              <h2 style={{ fontSize: '2.5rem', color: '#2ecc71' }}>🎉 Maze Escaped!</h2>
-              <p style={{ color: '#d4beae' }}>All 5 Espresso Relics collected. Score: {score}</p>
-              <button
-                onClick={runPythonScript}
+            />
+
+            {won && (
+              <div
                 style={{
-                  padding: '12px 28px',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent-primary)',
-                  color: '#fff',
-                  fontWeight: 700,
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20, 13, 9, 0.92)',
+                  backdropFilter: 'blur(8px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '16px',
+                  color: '#fcf6ee',
+                  padding: '16px',
+                  textAlign: 'center',
                 }}
               >
-                Generate Next Python Maze
+                <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', color: '#2ecc71' }}>🎉 Maze Escaped!</h2>
+                <p style={{ color: '#d4beae', fontSize: '0.92rem' }}>All 5 Espresso Relics collected. Score: {score}</p>
+                <button
+                  onClick={runPythonScript}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--accent-primary)',
+                    color: '#fff',
+                    fontWeight: 700,
+                  }}
+                >
+                  Generate Next Python Maze
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Virtual D-Pad for Mobile Touch Play */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              👆 Touch D-Pad to Navigate Snake
+            </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 54px)', gap: '6px' }}>
+              <div />
+              <button
+                onClick={() => movePlayer(0, -1)}
+                aria-label="Move Up"
+                className="virtual-btn"
+                style={{ fontSize: '1.2rem' }}
+              >
+                ▲
+              </button>
+              <div />
+              <button
+                onClick={() => movePlayer(-1, 0)}
+                aria-label="Move Left"
+                className="virtual-btn"
+                style={{ fontSize: '1.2rem' }}
+              >
+                ◀
+              </button>
+              <button
+                onClick={() => movePlayer(0, 1)}
+                aria-label="Move Down"
+                className="virtual-btn"
+                style={{ fontSize: '1.2rem' }}
+              >
+                ▼
+              </button>
+              <button
+                onClick={() => movePlayer(1, 0)}
+                aria-label="Move Right"
+                className="virtual-btn"
+                style={{ fontSize: '1.2rem' }}
+              >
+                ▶
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        </>
       ) : (
         <div
           style={{
             width: '100%',
             maxWidth: '750px',
             background: '#160f0a',
-            padding: '16px',
+            padding: '14px',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-main)',
           }}
         >
-          <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', color: '#d4beae' }}>
-            <span style={{ fontSize: '0.85rem' }}>Edit the Python maze generation algorithm below and click Re-run!</span>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', color: '#d4beae' }}>
+            <span style={{ fontSize: '0.82rem' }}>Edit the Python maze generation code and tap Re-run!</span>
           </div>
           <textarea
             value={pythonCode}
             onChange={(e) => setPythonCode(e.target.value)}
             style={{
               width: '100%',
-              height: '340px',
+              height: '300px',
               background: '#0e0906',
               color: '#38ef7d',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.9rem',
-              padding: '12px',
+              fontSize: '0.85rem',
+              lineHeight: 1.4,
+              padding: '10px',
               borderRadius: 'var(--radius-sm)',
               border: '1px solid #332115',
               outline: 'none',

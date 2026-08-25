@@ -228,8 +228,44 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [move]);
 
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current || e.changedTouches.length === 0) return;
+    const start = touchStartRef.current;
+    const end = {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY,
+    };
+    touchStartRef.current = null;
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const dist = Math.hypot(dx, dy);
+
+    // Minimum swipe threshold
+    if (dist >= 30) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0) move('right');
+        else move('left');
+      } else {
+        if (dy > 0) move('down');
+        else move('up');
+      }
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '14px' }}>
       {/* Score Header */}
       <div
         style={{
@@ -237,16 +273,16 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
-          maxWidth: '480px',
-          padding: '12px 18px',
+          maxWidth: 'min(94vw, 440px)',
+          padding: '10px 16px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-main)',
         }}
       >
         <div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>BREW SCORE</span>
-          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>BREW SCORE</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
             {score}
           </span>
         </div>
@@ -254,14 +290,15 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           <button
             onClick={undoMove}
             disabled={!previousBoard}
+            aria-label="Undo move"
             style={{
-              padding: '8px 14px',
+              padding: '8px 12px',
               borderRadius: 'var(--radius-sm)',
               background: previousBoard ? 'var(--accent-tag-bg)' : 'transparent',
               color: previousBoard ? 'var(--accent-tag-text)' : 'var(--text-muted)',
               border: '1px solid var(--border-main)',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               cursor: previousBoard ? 'pointer' : 'not-allowed',
             }}
           >
@@ -269,13 +306,14 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           </button>
           <button
             onClick={startNewGame}
+            aria-label="New game"
             style={{
-              padding: '8px 16px',
+              padding: '8px 14px',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--accent-primary)',
               color: '#ffffff',
               fontWeight: 700,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
             }}
           >
             New Game
@@ -283,22 +321,26 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
         </div>
       </div>
 
-      {/* 2048 Grid Board */}
+      {/* 2048 Grid Board with Swipe Gestures */}
       <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: 'min(94vw, 440px)',
           aspectRatio: '1/1',
           background: 'var(--bg-card)',
           border: '2px solid var(--border-highlight)',
           borderRadius: 'var(--radius-lg)',
-          padding: '12px',
+          padding: 'clamp(6px, 2vw, 12px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gridTemplateRows: 'repeat(4, 1fr)',
-          gap: '10px',
+          gap: 'clamp(6px, 1.8vw, 10px)',
           boxShadow: 'var(--shadow-md)',
+          touchAction: 'none',
+          userSelect: 'none',
         }}
       >
         {board.map((row, r) =>
@@ -316,20 +358,21 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 800,
-                  fontSize: val >= 1024 ? '1.1rem' : val >= 128 ? '1.35rem' : '1.7rem',
+                  fontSize: val >= 1024 ? 'clamp(0.85rem, 2.5vw, 1.1rem)' : val >= 128 ? 'clamp(1rem, 3.2vw, 1.35rem)' : 'clamp(1.25rem, 4.5vw, 1.7rem)',
                   fontFamily: 'var(--font-display)',
-                  boxShadow: val > 0 ? '0 4px 10px rgba(0,0,0,0.15)' : 'none',
-                  transition: 'all 0.15s ease',
+                  boxShadow: val > 0 ? '0 3px 8px rgba(0,0,0,0.15)' : 'none',
+                  transition: 'all 0.12s ease',
                   userSelect: 'none',
                   position: 'relative',
                   border: val > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                  padding: '2px',
                 }}
               >
                 {val > 0 && (
                   <>
-                    <span style={{ fontSize: '0.9rem', marginBottom: '2px' }}>{stage?.icon}</span>
+                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', marginBottom: '1px' }}>{stage?.icon}</span>
                     <span>{val}</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.85, marginTop: '2px', textAlign: 'center' }}>
+                    <span style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.65rem)', fontWeight: 600, opacity: 0.85, marginTop: '1px', textAlign: 'center', lineHeight: 1.1 }}>
                       {stage?.label}
                     </span>
                   </>
@@ -345,18 +388,19 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(20, 13, 9, 0.88)',
+              background: 'rgba(20, 13, 9, 0.9)',
               backdropFilter: 'blur(6px)',
               borderRadius: 'var(--radius-lg)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '16px',
+              gap: '14px',
               color: '#ffffff',
+              padding: '16px',
             }}
           >
-            <h3 style={{ fontSize: '2rem', color: '#ffc988' }}>☕ Out of Space!</h3>
+            <h3 style={{ fontSize: '1.8rem', color: '#ffc988' }}>☕ Out of Space!</h3>
             <p style={{ color: '#d4beae' }}>Final Score: {score}</p>
             <button
               onClick={startNewGame}
@@ -377,13 +421,13 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
           <div
             style={{
               position: 'absolute',
-              top: '12px',
-              right: '12px',
+              top: '10px',
+              right: '10px',
               background: 'var(--accent-primary)',
               color: '#fff',
-              padding: '6px 14px',
+              padding: '4px 12px',
               borderRadius: 'var(--radius-full)',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               fontWeight: 700,
               boxShadow: 'var(--shadow-glow)',
             }}
@@ -393,62 +437,47 @@ const Coffee2048Game: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdat
         )}
       </div>
 
-      {/* Touch / Click Direction Arrows for Mobile & Mouse */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 56px)', gap: '8px', marginTop: '8px' }}>
-        <div />
-        <button
-          onClick={() => move('up')}
-          style={{
-            height: '56px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-main)',
-            fontSize: '1.2rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          ▲
-        </button>
-        <div />
-        <button
-          onClick={() => move('left')}
-          style={{
-            height: '56px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-main)',
-            fontSize: '1.2rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          ◀
-        </button>
-        <button
-          onClick={() => move('down')}
-          style={{
-            height: '56px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-main)',
-            fontSize: '1.2rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          ▼
-        </button>
-        <button
-          onClick={() => move('right')}
-          style={{
-            height: '56px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-main)',
-            fontSize: '1.2rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          ▶
-        </button>
+      {/* Touch / Click Direction D-Pad Buttons for Mobile & Desktop */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+          👆 Swipe on board or tap D-Pad below
+        </span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 52px)', gap: '6px' }}>
+          <div />
+          <button
+            onClick={() => move('up')}
+            aria-label="Move Up"
+            className="virtual-btn"
+            style={{ fontSize: '1.1rem' }}
+          >
+            ▲
+          </button>
+          <div />
+          <button
+            onClick={() => move('left')}
+            aria-label="Move Left"
+            className="virtual-btn"
+            style={{ fontSize: '1.1rem' }}
+          >
+            ◀
+          </button>
+          <button
+            onClick={() => move('down')}
+            aria-label="Move Down"
+            className="virtual-btn"
+            style={{ fontSize: '1.1rem' }}
+          >
+            ▼
+          </button>
+          <button
+            onClick={() => move('right')}
+            aria-label="Move Right"
+            className="virtual-btn"
+            style={{ fontSize: '1.1rem' }}
+          >
+            ▶
+          </button>
+        </div>
       </div>
     </div>
   );

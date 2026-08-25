@@ -399,8 +399,19 @@ const NeonSnakeGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
     };
   };
 
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || e.touches.length === 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    mousePosRef.current = {
+      x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+      y: (touch.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '14px' }}>
       {/* Top HUD */}
       <div
         style={{
@@ -409,27 +420,28 @@ const NeonSnakeGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           alignItems: 'center',
           width: '100%',
           maxWidth: '880px',
-          padding: '12px 20px',
+          padding: '10px 16px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-main)',
         }}
       >
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1rem' }}>
             🐍 Length: {length}
           </span>
-          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Score: {score}</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Score: {score}</span>
         </div>
         <button
           onClick={() => setGameState('menu')}
+          aria-label="Reset arena"
           style={{
             padding: '6px 14px',
             borderRadius: 'var(--radius-sm)',
             background: 'var(--accent-tag-bg)',
             color: 'var(--accent-tag-text)',
             fontWeight: 600,
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
           }}
         >
           Reset Arena
@@ -444,7 +456,8 @@ const NeonSnakeGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           overflow: 'hidden',
           boxShadow: 'var(--shadow-lg)',
           border: '2px solid var(--border-highlight)',
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: '880px',
         }}
       >
         <canvas
@@ -454,30 +467,88 @@ const NeonSnakeGame: React.FC<GameComponentProps> = ({ onGameOver, onScoreUpdate
           onMouseMove={handleMouseMove}
           onMouseDown={() => (isMouseDownRef.current = true)}
           onMouseUp={() => (isMouseDownRef.current = false)}
-          style={{ display: 'block', maxWidth: '100%', height: 'auto', cursor: 'crosshair' }}
+          onTouchStart={(e) => {
+            handleTouchMove(e);
+          }}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={() => (isMouseDownRef.current = false)}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            aspectRatio: '880/560',
+            cursor: 'crosshair',
+            touchAction: 'none',
+          }}
         />
+
+        {/* Floating Nitro Boost Button for Mobile */}
+        {gameState === 'playing' && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              right: '16px',
+              zIndex: 10,
+            }}
+          >
+            <button
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                isMouseDownRef.current = true;
+              }}
+              onPointerUp={(e) => {
+                e.stopPropagation();
+                isMouseDownRef.current = false;
+              }}
+              onPointerLeave={() => (isMouseDownRef.current = false)}
+              aria-label="Nitro Boost"
+              className="virtual-btn"
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, #f39c12 0%, var(--accent-primary) 100%)',
+                color: '#ffffff',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                boxShadow: '0 0 20px rgba(243, 156, 18, 0.6), 0 4px 10px rgba(0,0,0,0.4)',
+                border: '2px solid #ffffff',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+              }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>⚡</span>
+              <span>BOOST</span>
+            </button>
+          </div>
+        )}
 
         {/* Live Leaderboard Overlay */}
         {gameState === 'playing' && (
           <div
             style={{
               position: 'absolute',
-              top: '16px',
-              right: '16px',
-              background: 'rgba(20, 13, 9, 0.75)',
+              top: '12px',
+              right: '12px',
+              background: 'rgba(20, 13, 9, 0.78)',
               backdropFilter: 'blur(8px)',
-              padding: '10px 16px',
+              padding: '8px 12px',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-main)',
               color: '#ffffff',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               pointerEvents: 'none',
+              maxWidth: '180px',
             }}
           >
-            <div style={{ fontWeight: 700, color: 'var(--accent-warm)', marginBottom: '6px' }}>🏆 Leaderboard</div>
-            {leaderboard.map((entry, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', margin: '2px 0' }}>
-                <span style={{ color: entry.name.includes('You') ? '#e09f58' : '#d4beae' }}>
+            <div style={{ fontWeight: 700, color: 'var(--accent-warm)', marginBottom: '4px' }}>🏆 Top Snakes</div>
+            {leaderboard.slice(0, 4).map((entry, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', margin: '2px 0' }}>
+                <span style={{ color: entry.name.includes('You') ? '#e09f58' : '#d4beae', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {idx + 1}. {entry.name}
                 </span>
                 <span style={{ fontWeight: 600 }}>{entry.score}</span>
