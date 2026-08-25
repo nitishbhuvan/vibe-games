@@ -1,68 +1,243 @@
+/* ==========================================================================
+   Vibe Games - Coffee Theme Design System
+   ========================================================================== */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Fonts */
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', var(--font-sans);
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+}
+
+/* Light Coffee Theme (Creamy White + Warm Brown Accents) */
+[data-theme='light'] {
+  --bg-main: #fbf7f2;
+  --bg-subtle: #f4eee5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-sidebar: rgba(251, 247, 242, 0.88);
+  --bg-header: rgba(251, 247, 242, 0.85);
+  --bg-input: #ffffff;
+
+  --text-primary: #2d180c;
+  --text-secondary: #6e4e37;
+  --text-muted: #9c7e6b;
+  --text-inverse: #ffffff;
+
+  --border-main: #e8ded2;
+  --border-highlight: #d8c2af;
+  --border-focus: #b5835a;
+
+  --accent-primary: #8b5129;
+  --accent-secondary: #b5734c;
+  --accent-warm: #d4915d;
+  --accent-glow: rgba(181, 115, 76, 0.25);
+  --accent-tag-bg: #faefe4;
+  --accent-tag-text: #783d16;
+
+  --shadow-sm: 0 2px 8px rgba(45, 24, 12, 0.05);
+  --shadow-md: 0 8px 24px rgba(45, 24, 12, 0.08);
+  --shadow-lg: 0 16px 36px rgba(45, 24, 12, 0.12);
+  --shadow-glow: 0 0 24px rgba(181, 115, 76, 0.35);
+
+  --badge-recent-bg: #ffedd5;
+  --badge-recent-text: #9a3412;
+  --badge-top-bg: #fef3c7;
+  --badge-top-text: #92400e;
+}
+
+/* Dark Espresso Theme (Deep Coffee Roast + Caramel Glowing Accents) */
+[data-theme='dark'] {
+  --bg-main: #140d09;
+  --bg-subtle: #1c130d;
+  --bg-card: #1f150f;
+  --bg-card-hover: #261b14;
+  --bg-sidebar: rgba(20, 13, 9, 0.88);
+  --bg-header: rgba(20, 13, 9, 0.85);
+  --bg-input: #180f0a;
+
+  --text-primary: #faefe6;
+  --text-secondary: #d4beae;
+  --text-muted: #8f7463;
+  --text-inverse: #140d09;
+
+  --border-main: #2f2017;
+  --border-highlight: #483325;
+  --border-focus: #e09f58;
+
+  --accent-primary: #e09f58;
+  --accent-secondary: #f3b775;
+  --accent-warm: #ffc988;
+  --accent-glow: rgba(224, 159, 88, 0.35);
+  --accent-tag-bg: #2d1d13;
+  --accent-tag-text: #f3b775;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 32px rgba(224, 159, 88, 0.4);
+
+  --badge-recent-bg: #451a03;
+  --badge-recent-text: #fdba74;
+  --badge-top-bg: #452a0a;
+  --badge-top-text: #fde047;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
   line-height: 1.5;
-  font-weight: 400;
+  overflow-x: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  color: inherit;
+  text-decoration: none;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  border: none;
+  background: none;
+  color: inherit;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
   }
-  a:hover {
-    color: #747bff;
+  50% {
+    transform: translateY(-6px);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--accent-glow);
   }
+  50% {
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+}
+
+@keyframes steamRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(1.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Glassmorphic Utility */
+.glass-panel {
+  background: var(--bg-sidebar);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-main);
+}
+
+.glow-border {
+  border: 1px solid var(--border-main);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.glow-border:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Controller 'M' Logo Component Styles */
+.controller-m-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.controller-m-svg {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform var(--transition-spring);
+}
+
+.brand-logo-container:hover .controller-m-svg {
+  transform: scale(1.18) rotate(-4deg);
+}
+
+/* Interactive Floating Cards */
+.game-card-hover {
+  transition: transform var(--transition-spring), box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.game-card-hover:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  border-color: var(--accent-primary);
 }
