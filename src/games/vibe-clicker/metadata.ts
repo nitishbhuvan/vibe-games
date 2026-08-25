@@ -11,7 +11,7 @@ export const vibeClickerMetadata: GameMetadata = {
     'Click or tap the Giant Coffee Mug to harvest beans.',
     'Build combo streaks by clicking rapidly to multiply your yield!',
     'Purchase automation upgrades like Hand Grinders, Espresso Machines, and Cold Brew Towers in the roastery shop.',
-    'Watch your beans per second (BPS) skyrocket!',
+    'Your roasted beans and purchased upgrades are automatically saved to your device in real time!',
   ],
   categories: ['mouse', 'puzzles'],
   thumbnail: '☕',
