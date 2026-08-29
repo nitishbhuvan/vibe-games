@@ -6,9 +6,11 @@ import { dualPongMetadata } from './dual-pong/metadata';
 import { vibeClickerMetadata } from './vibe-clicker/metadata';
 import { retroJumpMetadata } from './retro-jump/metadata';
 import { pythonMazeMetadata } from './python-runner-demo/metadata';
+import { roninTwilightMetadata } from './ronin-twilight/metadata';
 
 // Master list of all available games on Vibe Games
 export const ALL_GAMES: GameMetadata[] = [
+  roninTwilightMetadata,
   turboDriftMetadata,
   coffee2048Metadata,
   neonSnakeMetadata,
