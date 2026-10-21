@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ronin: Twilight Blade - 16-Bit Pixel Art Action Platformer</title>
+  <meta name="description" content="A 16-bit pixel art 2D action platformer set in a moody twilight Japanese landscape with gnarled pines, torii gates, pagoda, and intense katana combat.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Press+Start+2P&family=Yuji+Boku&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- Main Game Canvas Container -->
+    <div id="canvas-container">
+      <canvas id="game-canvas" width="640" height="360"></canvas>
+      
+      <!-- Scanlines & Retro CRT Screen Overlay (Optional toggle) -->
+      <div id="crt-overlay" class="crt-overlay active"></div>
+      <div id="vignette-overlay" class="vignette-overlay"></div>
+
+      <!-- Flash Screen Effect -->
+      <div id="screen-flash" class="screen-flash"></div>
+
+      <!-- In-Game Cinematic Letterbox Bars -->
+      <div id="cinematic-top" class="cinematic-bar top"></div>
+      <div id="cinematic-bottom" class="cinematic-bar bottom"></div>
+
+      <!-- Floating Text / Dialogue Container -->
+      <div id="story-banner" class="story-banner hidden">
+        <div id="story-text" class="story-text"></div>
+      </div>
+
+      <!-- Title / Start Screen -->
+      <div id="title-screen" class="screen-overlay">
+        <div class="title-decorations">
+          <div class="kanji-watermark">浪人・黄昏の刃</div>
+        </div>
+        <div class="title-content">
+          <div class="title-badge">16-BIT RETRO ACTION</div>
+          <h1 class="game-title">RONIN</h1>
+          <h2 class="game-subtitle">TWILIGHT BLADE ・ 黄昏の刃</h2>
+          <p class="title-desc">A lone swordsman through the misty bamboo groves, ancient torii gates, and pagoda ruins at twilight.</p>
+          
+          <div class="start-btn-container">
+            <button id="start-game-btn" class="btn-primary">
+              <span class="btn-glow"></span>
+              <span class="btn-text">BEGIN JOURNEY</span>
+            </button>
+          </div>
+
+          <div class="controls-guide">
+            <div class="guide-col">
+              <div class="guide-title"><span class="key-badge">⌨ KEYBOARD</span></div>
+              <div class="guide-row"><span>Move:</span> <kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd></div>
+              <div class="guide-row"><span>Jump / Double Jump:</span> <kbd>W</kbd> / <kbd>SPACE</kbd> / <kbd>K</kbd></div>
+              <div class="guide-row"><span>Katana Slash / Combo:</span> <kbd>J</kbd> or <kbd>Z</kbd></div>
+              <div class="guide-row"><span>Parry / Deflect:</span> <kbd>L</kbd> or <kbd>C</kbd></div>
+              <div class="guide-row"><span>Dodge / Roll:</span> <kbd>SHIFT</kbd> or <kbd>S</kbd> + Move</div>
+              <div class="guide-row"><span>Iaijutsu Dash Strike:</span> Hold <kbd>I</kbd> / <kbd>X</kbd> then release</div>
+              <div class="guide-row"><span>Throw Kunai:</span> <kbd>U</kbd> or <kbd>F</kbd></div>
+              <div class="guide-row"><span>Heal (Gourd):</span> <kbd>H</kbd> or <kbd>E</kbd></div>
+            </div>
+            <div class="guide-col">
+              <div class="guide-title"><span class="key-badge">🎮 GAMEPAD</span></div>
+              <div class="guide-row"><span>Move:</span> Left Stick / D-Pad</div>
+              <div class="guide-row"><span>Jump:</span> <kbd>A</kbd> / <kbd>✕</kbd></div>
+              <div class="guide-row"><span>Attack:</span> <kbd>X</kbd> / <kbd>▢</kbd></div>
+              <div class="guide-row"><span>Parry:</span> <kbd>LB</kbd> / <kbd>L1</kbd></div>
+              <div class="guide-row"><span>Dodge:</span> <kbd>B</kbd> / <kbd>◯</kbd></div>
+              <div class="guide-row"><span>Iai Strike:</span> <kbd>Y</kbd> / <kbd>△</kbd></div>
+              <div class="guide-row"><span>Kunai:</span> <kbd>RB</kbd> / <kbd>R1</kbd></div>
+              <div class="guide-row"><span>Heal:</span> <kbd>LT</kbd> / <kbd>L2</kbd></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="game-over-screen" class="screen-overlay hidden">
+        <div class="game-over-content">
+          <div class="death-kanji">死</div>
+          <h2 class="game-over-title">FALLEN WARRIOR</h2>
+          <p class="game-over-subtitle">Your blade sleeps beneath the falling twilight sakura...</p>
+          <div class="game-over-stats" id="death-stats"></div>
+          <button id="retry-btn" class="btn-primary">
+            <span class="btn-glow"></span>
+            <span class="btn-text">RISE AGAIN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Victory Screen -->
+      <div id="victory-screen" class="screen-overlay hidden">
+        <div class="victory-content">
+          <div class="victory-kanji">勝</div>
+          <h2 class="victory-title">PAGODA CLEARED</h2>
+          <p class="victory-subtitle">The Corrupted Warlord has fallen. Peace returns to the twilight shrine.</p>
+          <div class="victory-stats" id="victory-stats"></div>
+          <button id="play-again-btn" class="btn-primary">
+            <span class="btn-glow"></span>
+            <span class="btn-text">PLAY AGAIN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pause Menu -->
+      <div id="pause-screen" class="screen-overlay hidden">
+        <div class="pause-content">
+          <h2 class="pause-title">PAUSED</h2>
+          <div class="menu-options">
+            <button id="resume-btn" class="btn-secondary">RESUME</button>
+            <button id="toggle-crt-btn" class="btn-secondary">TOGGLE CRT: ON</button>
+            <button id="toggle-sound-btn" class="btn-secondary">AUDIO: ON</button>
+            <button id="restart-btn" class="btn-secondary">RESTART LEVEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Control Bar / Status Bar (Top Right) -->
+      <div id="top-bar">
+        <button id="btn-audio-toggle" class="icon-btn" title="Toggle Sound (M)">🔊</button>
+        <button id="btn-crt-toggle" class="icon-btn active" title="Toggle CRT Scanlines (C)">📺</button>
+        <button id="btn-pause" class="icon-btn" title="Pause Game (ESC / P)">⏸</button>
+      </div>
+
+      <!-- Touch Controls for Mobile / Tablets -->
+      <div id="touch-controls" class="touch-controls hidden">
+        <!-- D-Pad Left -->
+        <div class="touch-dpad">
+          <button class="touch-btn dpad-btn" id="touch-left" data-key="ArrowLeft">◀</button>
+          <div class="touch-dpad-center"></div>
+          <button class="touch-btn dpad-btn" id="touch-right" data-key="ArrowRight">▶</button>
+        </div>
+
+        <!-- Action Buttons Right -->
+        <div class="touch-actions">
+          <div class="touch-row">
+            <button class="touch-btn action-btn special-btn" id="touch-heal" data-key="KeyH">🍵<span class="btn-label">HEAL</span></button>
+            <button class="touch-btn action-btn special-btn" id="touch-kunai" data-key="KeyU">🗡️<span class="btn-label">KUNAI</span></button>
+            <button class="touch-btn action-btn special-btn" id="touch-iai" data-key="KeyI">⚡<span class="btn-label">IAI</span></button>
+          </div>
+          <div class="touch-row">
+            <button class="touch-btn action-btn parry-btn" id="touch-parry" data-key="KeyL">🛡️<span class="btn-label">PARRY</span></button>
+            <button class="touch-btn action-btn roll-btn" id="touch-roll" data-key="ShiftLeft">💨<span class="btn-label">ROLL</span></button>
+            <button class="touch-btn action-btn jump-btn" id="touch-jump" data-key="Space">⬆<span class="btn-label">JUMP</span></button>
+            <button class="touch-btn action-btn attack-btn" id="touch-attack" data-key="KeyJ">⚔<span class="btn-label">SLASH</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Info bar with aesthetic details -->
+    <div id="footer-info">
+      <span>🏮 16-Bit Twilight Japanese Platformer</span>
+      <span class="footer-dot">•</span>
+      <span>WASD / Arrow Keys to Move</span>
+      <span class="footer-dot">•</span>
+      <span>J: Attack &nbsp; L: Parry &nbsp; Shift: Roll &nbsp; I: Charged Iai &nbsp; U: Kunai &nbsp; H: Heal</span>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
